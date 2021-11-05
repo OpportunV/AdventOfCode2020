@@ -13,7 +13,14 @@ namespace AdventOfCode2020
         public Form1()
         {
             InitializeComponent();
-
+            
+            var buttonAll = new Button();
+            Controls.Add(buttonAll);
+            buttonAll.Text = @"Solve All";
+            buttonAll.Location = new Point(26 / AmountPerCol * 3 * (ElementWidth + 10) + 2 * ElementWidth,
+                10 + 25 % AmountPerCol * ElementHeight + 5);
+            buttonAll.Size = new Size(ElementWidth, ElementHeight);
+            
             for (int i = 0; i < 25; i++)
             {
                 var className = $"AdventOfCode2020.Days.Day{i + 1}";
@@ -36,6 +43,8 @@ namespace AdventOfCode2020
                 textBox2.Size = new Size(ElementWidth, ElementHeight);
                 
                 button.Click += (sender, args) => { GetSolutions(textBox1, className, textBox2); };
+                buttonAll.Click += (sender, args) => { GetSolutions(textBox1, className, textBox2); };
+
                 GetSolutions(textBox1, className, textBox2);
             }
             
