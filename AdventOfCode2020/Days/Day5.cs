@@ -49,14 +49,13 @@ namespace AdventOfCode2020.Days
 
             var seatIds = new HashSet<int>(lines.Select(GetSeatId));
 
-            for (int i = 1; i < 127 * 7; i++)
+            for (int i = 1; i < 127 * 8 + 7; i++)
             {
                 if (!seatIds.Contains(i) && seatIds.Contains(i + 1) && seatIds.Contains(i - 1))
                 {
                     return i;
                 }
             }
-            
             
             return -1;
         }
