@@ -6,7 +6,7 @@ namespace AdventOfCode2020.Helpers
 {
     public static class Helper
     {
-        private static List<(int, int)> _directions = new List<(int, int)>
+        private static readonly List<(int, int)> _directions = new List<(int, int)>
         {
             (-1, -1),
             (-1,  0),
@@ -42,6 +42,56 @@ namespace AdventOfCode2020.Helpers
                 }
 
                 yield return (curX, curY);
+            }
+        }
+        
+        public static IEnumerable<(int, int, int)> Adjacent3D((int, int, int) pos)
+        {
+            var (x, y, z) = pos;
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                var curX = x + dx;
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    var curY = y + dy;
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        var curZ = z + dz;
+                        if (curX == x && curY == y && curZ == z)
+                        {
+                            continue;
+                        }
+
+                        yield return (curX, curY, curZ);
+                    }
+                }
+            }
+        }
+        
+        public static IEnumerable<(int, int, int, int)> Adjacent4D((int, int, int, int) pos)
+        {
+            var (x, y, z, w) = pos;
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                var curX = x + dx;
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    var curY = y + dy;
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        var curZ = z + dz;
+                        for (int dw = -1; dw <= 1; dw++)
+                        {
+                            var curW = w + dw;
+                            if (curX == x && curY == y && curZ == z && curW == w)
+                            {
+                                continue;
+                            }
+
+                            yield return (curX, curY, curZ, curW);
+                        }
+                    }
+                }
             }
         }
         
