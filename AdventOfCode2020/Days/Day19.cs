@@ -11,12 +11,9 @@ namespace AdventOfCode2020.Days
         private static readonly string _inputPath = Path.Combine("input",
             $"{System.Reflection.MethodBase.GetCurrentMethod().DeclaringType?.Name}.txt");
 
-        private static readonly Dictionary<string, (HashSet<string>, HashSet<string>)> _rules =
-            new Dictionary<string, (HashSet<string>, HashSet<string>)>();
-        private static readonly Dictionary<string, string> _letters = new Dictionary<string, string>();
+        private static readonly Dictionary<int, Rule> _rules = new Dictionary<int, Rule>();
         
-        private static readonly Dictionary<(int, int, string), bool> _cache = new Dictionary<(int, int, string), bool>();
-        private const string TargetRule = "0";
+        private const int TargetRule = 0;
 
         public static object Part1()
         {
@@ -40,26 +37,12 @@ namespace AdventOfCode2020.Days
                 if (char.IsDigit(line[0]))
                 {
                     var split = line.Split(':');
-                    var ruleId = split[0].Trim();
+                    var ruleId = int.Parse(split[0].Trim());
                     
-                    var dependencies = split[1].Trim().Split('|');
-                    var left = new HashSet<string>();
-                    if (char.IsDigit(dependencies[0][0]))
+                    _rules[ruleId] = new Rule
                     {
-                        left = new HashSet<string>(dependencies[0].Trim().Split(' '));
-                    }
-                    else
-                    {
-                        _letters[ruleId] = dependencies[0].Trim().Trim('"');
-                    }
-
-                    var right = new HashSet<string>();
-                    if (dependencies.Length > 1)
-                    {
-                        right = new HashSet<string>(dependencies[1].Trim().Split(' '));
-                    }
-                    
-                    _rules[ruleId] = (left, right);
+                        source = split[1].Trim()
+                    };
                 }
                 else
                 {
@@ -67,17 +50,14 @@ namespace AdventOfCode2020.Days
                 }
             }
 
-            var ans = 0;
-
-            foreach (var message in messages)
+            foreach (var rule in _rules.Values)
             {
-                _cache.Clear();
-                ans += Match(message, 0, message.Length, TargetRule)
-                    ? 1
-                    : 0;
+                Compile(rule);
             }
-
-            return ans;
+            
+            var targetRule = _rules[TargetRule].compiled.ToHashSet();
+            
+            return messages.Where(targetRule.Contains).Count();
         }
         
         public static object Part2()
@@ -91,76 +71,126 @@ namespace AdventOfCode2020.Days
             {
                 return -1;
             }
+            var messages = new HashSet<string>();
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+                
+                if (char.IsDigit(line[0]))
+                {
+                    var split = line.Split(':');
+                    var ruleId = int.Parse(split[0].Trim());
+
+                    _rules[ruleId] = new Rule()
+                    {
+                        source = split[1].Trim()
+                    };
+                }
+                else
+                {
+                    messages.Add(line);
+                }
+            }
+
+            foreach (var rule in _rules.Values)
+            {
+                Compile(rule);
+            }
             
-            return -1;
-        }
+            var ans = 0;
 
-        private static bool MatchRules(string message, int pos, int len, HashSet<string> rules)
-        {
-            if (pos == len && rules.Count == 0)
-            {
-                return true;
-            }
+            var rule42 = _rules[42].compiled.ToHashSet();
+            var rule31 = _rules[31].compiled.ToHashSet();
+            var rule42Len = rule42.First().Length;
+            var rule31Len = rule31.First().Length;
 
-            if (pos == len)
+            foreach (var message in messages)
             {
-                return false;
-            }
-
-            if (rules.Count == 0)
-            {
-                return false;
-            }
-
-            for (int i = pos + 1; i <= len; i++)
-            {
-                if (i == len && rules.Count == 1)
+                var rule31Count = 0;
+                var cur = message;
+                while (cur.Length >= rule31Len && rule31.Contains(cur.Substring(cur.Length - rule31Len)))
+                {
+                    cur = cur.Substring(0, cur.Length - rule31Len);
+                    rule31Count++;
+                }
+                if (rule31Count < 1)
                 {
                     continue;
                 }
 
-                var tmp = new List<string>(rules);
-                var firstRule = tmp[0];
-                tmp.RemoveAt(0);
-
-                if (Match(message, pos, i, firstRule)
-                    && MatchRules(message, i, len, new HashSet<string>(tmp)))
+                var rule42Count = 0;
+                while (cur.Length >= rule42Len && rule42.Contains(cur.Substring(0, rule42Len)))
                 {
-                    return true;
+                    cur = cur.Substring(rule42Len);
+                    rule42Count++;
+                }
+                if (rule42Count < rule31Count + 1)
+                {
+                    continue;
+                }
+
+                if (cur.Length == 0)
+                {
+                    ans++;
                 }
             }
-            
-            return false;
+
+            return ans;
         }
 
-        private static bool Match(string message, int pos, int len, string rule)
+        private class Rule
         {
-            var key = (pos, len, rule);
-            if (_cache.ContainsKey(key))
+            public string source;
+            public string[] compiled;
+        }
+        
+        private static void Compile(Rule rule)
+        {
+            if (rule.compiled != null)
             {
-                // Console.WriteLine($"{pos} {len} {rule} {_cache[key]}");
-                return _cache[key];
+                return;
             }
 
-            var firstOption = _rules[rule].Item1;
-            var flag = false;
-            if (_letters.ContainsKey(rule))
+            if (rule.source[0] == '"')
             {
-                // Console.WriteLine(_letters[rule][0]);
-                flag = _letters[rule][0] == message[pos];
+                rule.compiled = new[] { rule.source.Substring(1, rule.source.Length - 2) };
+                return;
             }
-            else
+
+            var compiled = new List<string>();
+
+            void CombineValues(string prefix, Span<string[]> fragments)
             {
-                var secondOption = _rules[rule].Item2;
-                if (MatchRules(message, pos, len, firstOption) || MatchRules(message, pos, len, secondOption))
+                if (fragments.Length == 0)
                 {
-                    _cache[key] = true;
-                    return true;
+                    compiled.Add(prefix);
+                    return;
+                }
+
+                foreach (var s in fragments[0])
+                {
+                    CombineValues(prefix + s, fragments.Slice(1));
                 }
             }
-            
-            _cache[key] = flag;
-            return false;
+
+            foreach (var subRules in rule.source.Split('|'))
+            {
+                var fragments = new List<string[]>();
+                foreach (var r in subRules.Trim().Split())
+                {
+                    var id = int.Parse(r.Trim());
+                    var rr = _rules[id];
+                    Compile(rr);
+                    fragments.Add(rr.compiled);
+                }
+
+                CombineValues("", fragments.ToArray());
+            }
+
+            rule.compiled = compiled.ToArray();
         }
     }
 }
