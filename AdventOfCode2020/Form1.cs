@@ -45,7 +45,7 @@ namespace AdventOfCode2020
                 button.Click += (sender, args) => { GetSolutions(textBox1, className, textBox2); };
                 buttonAll.Click += (sender, args) => { GetSolutions(textBox1, className, textBox2); };
 
-                if (i >= 16)
+                if (i >= 17)
                 {
                     GetSolutions(textBox1, className, textBox2);
                 }
