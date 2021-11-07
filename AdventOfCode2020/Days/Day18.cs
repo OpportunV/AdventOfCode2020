@@ -1,5 +1,4 @@
 using System;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -14,7 +13,6 @@ namespace AdventOfCode2020.Days
 
         private static readonly Regex _bracesRegEx = new Regex(@"\([\d+* ]+?\)");
         private static readonly Regex _additionRegEx = new Regex(@"(\d+) \+ (\d+)");
-        private static readonly DataTable _computer = new DataTable();
         
         public static object Part1()
         {
