@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AdventOfCode2020
@@ -17,9 +19,16 @@ namespace AdventOfCode2020
             var buttonAll = new Button();
             Controls.Add(buttonAll);
             buttonAll.Text = @"Solve All";
-            buttonAll.Location = new Point(26 / AmountPerCol * 3 * (ElementWidth + 10) + 2 * ElementWidth,
-                10 + 25 % AmountPerCol * ElementHeight + 5);
+            buttonAll.Location = new Point(26 / AmountPerCol * 3 * (ElementWidth + 20),
+                10 + 26 % AmountPerCol * ElementHeight + 5);
             buttonAll.Size = new Size(ElementWidth, ElementHeight);
+            
+            var buttonClearAll = new Button();
+            Controls.Add(buttonClearAll);
+            buttonClearAll.Text = @"Clear All";
+            buttonClearAll.Location = new Point(26 / AmountPerCol * 4 * (ElementWidth + 3),
+                10 + 26 % AmountPerCol * ElementHeight + 5);
+            buttonClearAll.Size = new Size(ElementWidth, ElementHeight);
             
             for (int i = 0; i < 25; i++)
             {
@@ -42,28 +51,43 @@ namespace AdventOfCode2020
                 textBox2.Location = new Point(posX + 2 * ElementWidth + 30, textBoxY);
                 textBox2.Size = new Size(ElementWidth, ElementHeight);
                 
-                button.Click += (sender, args) => { GetSolutions(textBox1, className, textBox2); };
-                buttonAll.Click += (sender, args) => { GetSolutions(textBox1, className, textBox2); };
 
-                if (i >= 20)
+                async void OnButtonAllOnClick(object sender, EventArgs args)
                 {
-                    GetSolutions(textBox1, className, textBox2);
+                    var (ans1, ans2) = await Task.Run(() => GetSolutions(className));
+                    textBox1.Text = ans1;
+                    textBox2.Text = ans2;
                 }
+
+                button.Click += OnButtonAllOnClick;
+                buttonAll.Click += OnButtonAllOnClick;
+                buttonClearAll.Click += (sender, args) =>
+                {
+                    textBox1.Text = "";
+                    textBox2.Text = "";
+                };
             }
             
             AutoSize = true;
         }
 
-        private void GetSolutions(TextBox textBox1, string className, TextBox textBox2)
+        private (string, string) GetSolutions(string className)
         {
-            textBox1.Text = Type.GetType(className)?
+            Type.GetType(className)?
+                .GetConstructor(BindingFlags.Static | BindingFlags.NonPublic, null, Type.EmptyTypes, null)
+                ?.Invoke(null, null);
+            
+            var ans1 = Type.GetType(className)?
                 .GetMethod("Part1")?
-                .Invoke(this, Array.Empty<object>())
-                .ToString();
-            textBox2.Text = Type.GetType(className)?
+                .Invoke(this, Array.Empty<object>()).ToString();
+
+            
+            var ans2 = Type.GetType(className)?
                 .GetMethod("Part2")?
-                .Invoke(this, Array.Empty<object>())
-                .ToString();
+                .Invoke(this, Array.Empty<object>()).ToString();
+
+
+            return (ans1, ans2);
         }
     }
 }

@@ -4,7 +4,7 @@ using AdventOfCode2020.Helpers;
 
 namespace AdventOfCode2020.Days
 {
-    public class Day9
+    public static class Day9
     {
         private static readonly string _inputPath = Path.Combine("input",
             $"{System.Reflection.MethodBase.GetCurrentMethod().DeclaringType?.Name}.txt");
@@ -71,7 +71,7 @@ namespace AdventOfCode2020.Days
             }
             
             var numbers = lines.Select(long.Parse).ToArray();
-            var target = (long)Part1();
+            var target = (long) Part1();
 
             for (int i = 0; i < numbers.Length; i++)
             {

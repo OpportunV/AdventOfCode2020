@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using AdventOfCode2020.Helpers;
 
 namespace AdventOfCode2020.Days
 {
-    public class Day7
+    public static class Day7
     {
         private static readonly string _inputPath = Path.Combine("input",
             $"{System.Reflection.MethodBase.GetCurrentMethod().DeclaringType?.Name}.txt");
